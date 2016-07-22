@@ -153,6 +153,8 @@ namespace DataLogger.Droid
 
 		void InitializeLocationManager()
 		{
+			string toast2 = string.Format("initial location");
+			Toast.MakeText(this, toast2, ToastLength.Long).Show();
 			_locationManager = (LocationManager)GetSystemService(LocationService);
 			Criteria criteriaForLocationService = new Criteria
 			{
@@ -187,7 +189,9 @@ namespace DataLogger.Droid
 			}
 		}
 
-		public void OnProviderDisabled(string provider) { }
+		public void OnProviderDisabled(string provider) { 
+		
+		}
 
 		public void OnProviderEnabled(string provider) { }
 
