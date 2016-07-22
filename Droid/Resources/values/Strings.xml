@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="hello">Hello World, Click Me!</string>
+	<string name="report">Report</string>
+	<string name="app_name">DataLogger.Droid</string>
+	<string-array name="choice_array">
+        <item>Flat</item>
+        <item>Stair up</item>
+        <item>Stair down</item>
+        <item>Incline up</item>
+        <item>Incline down</item>
+    </string-array>
+</resources>
