@@ -12,6 +12,7 @@ using Android.Net;
 using Android.Locations;
 using System.Linq;
 
+using DataLogger.Droid.Services;
 
 namespace DataLogger.Droid
 {
@@ -21,14 +22,17 @@ namespace DataLogger.Droid
 
 	public class MainActivity : Activity, ILocationListener
 	{
-
 		ImageView _imageView;
-		//static readonly string TAG = "X:" + typeof(Activity).Name;
+		static readonly string TAG = "X:" + typeof(Activity).Name;
 		//TextView _addressText;
 		Location _currentLocation;
 		LocationManager _locationManager;
 		string _locationProvider;
 		TextView _locationText;
+
+
+		protected readonly string logTag = "App";
+		protected static LocationServiceConnection locationServiceConnection;
 
 		protected override void OnCreate(Bundle savedInstanceState)
 		{
@@ -81,8 +85,10 @@ namespace DataLogger.Droid
 			//_addressText = FindViewById<TextView>(Resource.Id.textView_address);
 			_locationText = FindViewById<TextView>(Resource.Id.textView_location);
 
-
 			InitializeLocationManager();
+
+
+
 
 		}
 
@@ -153,9 +159,10 @@ namespace DataLogger.Droid
 
 		void InitializeLocationManager()
 		{
-			string toast2 = string.Format("initial location");
-			Toast.MakeText(this, toast2, ToastLength.Long).Show();
+
+
 			_locationManager = (LocationManager)GetSystemService(LocationService);
+
 			Criteria criteriaForLocationService = new Criteria
 			{
 				Accuracy = Accuracy.Fine
@@ -189,8 +196,9 @@ namespace DataLogger.Droid
 			}
 		}
 
-		public void OnProviderDisabled(string provider) { 
-		
+		public void OnProviderDisabled(string provider)
+		{
+
 		}
 
 		public void OnProviderEnabled(string provider) { }
@@ -200,7 +208,20 @@ namespace DataLogger.Droid
 		protected override void OnResume()
 		{
 			base.OnResume();
-			_locationManager.RequestLocationUpdates(_locationProvider, 0, 0, this);
+
+			//_locationManager.RequestLocationUpdates(_locationProvider, 2000, 0, this);
+			string Provider = LocationManager.GpsProvider;
+
+			if (_locationManager.IsProviderEnabled(Provider))
+			{
+				_locationManager.RequestLocationUpdates(Provider, 2000, 0, this);
+			}
+			else
+			{
+				string toast2 = string.Format("Location is not available");
+				Toast.MakeText(this, toast2, ToastLength.Long).Show();
+				//Log.Info(tag, Provider + " is not available. Does the device have location services enabled?");
+			}
 		}
 
 		protected override void OnPause()
@@ -246,6 +267,5 @@ namespace DataLogger.Droid
 			return resizedBitmap;
 		}
 	}
-
 
 }
