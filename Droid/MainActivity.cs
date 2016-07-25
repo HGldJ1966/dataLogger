@@ -9,13 +9,12 @@ using System.Collections.Generic;
 using Android.Provider;
 using Java.Lang;
 using Android.Locations;
-using System.Linq;
 using Android.Util;
-using Android.Service;
 using Android.Net;
 using System.Threading.Tasks;
 using Java.Util;
 using DataLogger.Droid.Services;
+using System;
 
 namespace DataLogger.Droid
 {
@@ -150,8 +149,8 @@ namespace DataLogger.Droid
 		private void CreateDirectoryForPictures()
 		{
 			App._dir = new File(
-				Environment.GetExternalStoragePublicDirectory(
-					Environment.DirectoryPictures), "CameraAppDemo");
+				Android.OS.Environment.GetExternalStoragePublicDirectory(
+					Android.OS.Environment.DirectoryPictures), "CameraAppDemo");
 			if (!App._dir.Exists())
 			{
 				App._dir.Mkdirs();
@@ -171,7 +170,7 @@ namespace DataLogger.Droid
 			App._file = new File(App._dir, string.Format("myPhoto_{0}.jpg",UUID.RandomUUID()));
 
 			//App._file = new File(App._dir, String.Format("myPhoto_{0}.jpg", guid.NewGuid()));
-			intent.PutExtra(MediaStore.ExtraOutput, Uri.FromFile(App._file));
+			intent.PutExtra(MediaStore.ExtraOutput, Android.Net.Uri.FromFile(App._file));
 			StartActivityForResult(intent, 0);
 
 			//Resume collect GPS
@@ -185,7 +184,7 @@ namespace DataLogger.Droid
 			// Make it available in the gallery
 
 			Intent mediaScanIntent = new Intent(Intent.ActionMediaScannerScanFile);
-			Uri contentUri = Uri.FromFile(App._file);
+			Android.Net.Uri contentUri = Android.Net.Uri.FromFile(App._file);
 			mediaScanIntent.SetData(contentUri);
 			SendBroadcast(mediaScanIntent);
 
@@ -254,10 +253,10 @@ namespace DataLogger.Droid
 			// these events are on a background thread, need to update on the UI thread
 			RunOnUiThread(() =>
 			{
-				latText.Text = String.Format("Latitude: {0}", location.Latitude);
-				longText.Text = String.Format("Longitude: {0}", location.Longitude);
+				latText.Text = string.Format("Latitude: {0:f6}", location.Latitude);
+				longText.Text = string.Format("Longitude: {0:f6}", location.Longitude);
 
-				altText.Text = String.Format("Altitude: {0}", location.Altitude);
+				altText.Text = string.Format("Altitude: {0}", location.Altitude);
 				/*
 				speedText.Text = String.Format("Speed: {0}", location.Speed);
 				accText.Text = String.Format("Accuracy: {0}", location.Accuracy);
@@ -317,39 +316,19 @@ namespace DataLogger.Droid
 	}
 
 
-	public class ServiceConnectedEventArgs : System.EventArgs
-	{
-		public IBinder Binder { get; set; }
-	}
-
 	public class App
 	{
 		public static File _file;
 		public static File _dir;
 		public static Bitmap bitmap;
 
-
-
-
 		// events
-		public event System.EventHandler<ServiceConnectedEventArgs> LocationServiceConnected = delegate { };
+
+		public event EventHandler<ServiceConnectedEventArgs> LocationServiceConnected = delegate { };
 
 		// declarations
 		protected readonly string logTag = "App";
 		protected static LocationServiceConnection locationServiceConnection;
-
-
-		public LocationService LocationService
-		{
-			
-			get
-			{
-				if (locationServiceConnection.Binder == null)
-					throw new Exception("Service not bound yet");
-				// note that we use the ServiceConnection to get the Binder, and the Binder to get the Service here
-				return locationServiceConnection.Binder.Service;
-			}
-		}
 
 		// properties
 
@@ -359,6 +338,17 @@ namespace DataLogger.Droid
 		}
 		private static App current;
 
+		public LocationService LocationService
+		{
+			
+			get
+			{
+				if (locationServiceConnection.Binder == null)
+					throw new Java.Lang.Exception("Service not bound yet");
+				// note that we use the ServiceConnection to get the Binder, and the Binder to get the Service here
+				return locationServiceConnection.Binder.Service;
+			}
+		}
 
 		#region Application context
 
@@ -372,15 +362,17 @@ namespace DataLogger.Droid
 			// create a new service connection so we can get a binder to the service
 			locationServiceConnection = new LocationServiceConnection(null);
 
-			// this event will fire when the Service connectin in the OnServiceConnected call 
+			// this event will fire when the Service connection in the OnServiceConnected call 
 			locationServiceConnection.ServiceConnected += (object sender, ServiceConnectedEventArgs e) =>
 			{
 
 				Log.Debug(logTag, "Service Connected");
 				// we will use this event to notify MainActivity when to start updating the UI
-				this.LocationServiceConnected(this, e);
+				LocationServiceConnected(this, e);
+
 			};
 		}
+
 
 		public static void StartLocationService()
 		{
@@ -390,7 +382,7 @@ namespace DataLogger.Droid
 
 				// Start our main service
 				Log.Debug("App", "Calling StartService");
-				Android.App.Application.Context.StartService(new Intent(Application.Context, typeof(LocationService)));
+				Application.Context.StartService(new Intent(Application.Context, typeof(LocationService)));
 
 				// bind our service (Android goes and finds the running service by type, and puts a reference
 				// on the binder to that service)
@@ -401,7 +393,7 @@ namespace DataLogger.Droid
 
 				// Finally, we can bind to the Service using our Intent and the ServiceConnection we
 				// created in a previous step.
-				Android.App.Application.Context.BindService(locationServiceIntent, locationServiceConnection, Bind.AutoCreate);
+				Application.Context.BindService(locationServiceIntent, locationServiceConnection, Bind.AutoCreate);
 			}).Start();
 		}
 
@@ -414,7 +406,7 @@ namespace DataLogger.Droid
 			if (locationServiceConnection != null)
 			{
 				Log.Debug("App", "Unbinding from LocationService");
-				Android.App.Application.Context.UnbindService(locationServiceConnection);
+				Application.Context.UnbindService(locationServiceConnection);
 			}
 
 			// Stop the LocationService:
@@ -426,9 +418,6 @@ namespace DataLogger.Droid
 		}
 
 		#endregion
-
-
-
 
 	}
 

@@ -1,5 +1,4 @@
 using System;
-
 using Android.App;
 using Android.Util;
 using Android.Content;
@@ -21,7 +20,7 @@ namespace DataLogger.Droid.Services
 		}
 
 		// Set our location manager as the system location service
-		protected LocationManager LocMgr = Android.App.Application.Context.GetSystemService ("location") as LocationManager;
+		protected LocationManager LocMgr = Application.Context.GetSystemService ("location") as LocationManager;
 
 		readonly string logTag = "LocationService";
 		IBinder binder;
@@ -34,6 +33,7 @@ namespace DataLogger.Droid.Services
 
 		// This gets called when StartService is called in our App class
 		[Obsolete("deprecated in base class")]
+
 		public override StartCommandResult OnStartCommand (Intent intent, StartCommandFlags flags, int startId)
 		{
 			Log.Debug (logTag, "LocationService started");
