@@ -67,7 +67,7 @@ namespace DataLogger.Droid.Services
 			Log.Debug (logTag, string.Format ("You are about to get location updates via {0}", locationProvider));
 
 			// Get an initial fix on location
-			LocMgr.RequestLocationUpdates(locationProvider, 500, 0, this);
+			LocMgr.RequestLocationUpdates(locationProvider, 2000, 0, this); //request location update every 2 sec.
 
 			Log.Debug (logTag, "Now sending location updates");
 		}

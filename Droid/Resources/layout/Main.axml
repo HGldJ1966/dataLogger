@@ -41,17 +41,17 @@
             android:layout_height="wrap_content"
             android:id="@+id/textView5" />
         <TextView
-            android:text="Latitude :"
+            android:text="Latitude:"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/lat" />
         <TextView
-            android:text="Longitude :"
+            android:text="Longitude:"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/lon" />
         <TextView
-            android:text="Altitude :"
+            android:text="Altitude:"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/alt" />
@@ -72,7 +72,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/gridLayout1"
             android:rowCount="1"
-            android:columnCount="3"
+            android:columnCount="4"
             android:orientation="horizontal"
             android:alignmentMode="alignBounds"
             android:useDefaultMargins="false">
@@ -86,6 +86,9 @@
                 android:text="Get Pos"
                 android:id="@+id/bt_getPos"
                 android:textColor="#ffffffff" />
+            <Button
+                android:text="STOP"
+                android:id="@+id/bnt_start_stop" />
         </GridLayout>
         <ScrollView
             android:minWidth="25px"

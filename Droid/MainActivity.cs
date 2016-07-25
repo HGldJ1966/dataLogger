@@ -32,6 +32,7 @@ namespace DataLogger.Droid
 		TextView altText;
 		TextView speedText;
 		TextView accText;
+		string txt; //storing information to write in SD card
 
 		protected override void OnCreate(Bundle bundle)
 		{
@@ -119,7 +120,33 @@ namespace DataLogger.Droid
 			// Start the location service:
 			App.StartLocationService();
 
+		}
 
+
+		void writeLog(string txt) {
+			//create file name for date
+			string today = DateTime.Now.ToString("dd-MM-yyy");
+			var sdCardpath = Android.OS.Environment.ExternalStorageDirectory.Path;
+			var filePath = System.IO.Path.Combine(sdCardpath,string.Concat(today,"_datalogger.txt"));
+
+			using (var writer = new System.IO.StreamWriter(filePath, true))
+			{
+				writer.WriteLine(txt);
+
+			}
+
+		}
+
+		string getCurrentTime() { 
+			DateTime now = DateTime.Now.ToLocalTime();
+
+
+			if (DateTime.Now.IsDaylightSavingTime() == true)
+			{
+				now = now.AddHours(1);
+			}
+
+			return (string.Format("{0}", now)); ;
 		}
 
 		void getCurrentPos(object sender, EventArgs eventArgs)
@@ -262,7 +289,18 @@ namespace DataLogger.Droid
 				latText.Text = string.Format("Latitude: {0:f6}", location.Latitude);
 				longText.Text = string.Format("Longitude: {0:f6}", location.Longitude);
 
-				altText.Text = string.Format("Altitude: {0}", location.Altitude);
+				altText.Text = string.Format("Altitude: {0:f6}", location.Altitude);
+				string currentTime = getCurrentTime();
+
+				//Write lat,lon to file
+				txt = string.Format("{0:f6}, {1:f6}, {2:f6}, {3} ", 
+				                    location.Latitude,
+				                    location.Longitude,
+				                    location.Altitude,
+				                    currentTime);
+				
+				writeLog(txt);
+
 				/*
 				speedText.Text = String.Format("Speed: {0}", location.Speed);
 				accText.Text = String.Format("Accuracy: {0}", location.Accuracy);
