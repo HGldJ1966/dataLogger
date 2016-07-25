@@ -69,6 +69,9 @@ namespace DataLogger.Droid
 			// aapt resource value: 0x7f06000d
 			public const int bnt_takePic = 2131099661;
 			
+			// aapt resource value: 0x7f06000f
+			public const int button1 = 2131099663;
+			
 			// aapt resource value: 0x7f06000e
 			public const int button_report = 2131099662;
 			
@@ -78,8 +81,8 @@ namespace DataLogger.Droid
 			// aapt resource value: 0x7f06000c
 			public const int gridLayout1 = 2131099660;
 			
-			// aapt resource value: 0x7f06000f
-			public const int imageView1 = 2131099663;
+			// aapt resource value: 0x7f060011
+			public const int imageView1 = 2131099665;
 			
 			// aapt resource value: 0x7f060007
 			public const int lat = 2131099655;
@@ -89,6 +92,9 @@ namespace DataLogger.Droid
 			
 			// aapt resource value: 0x7f060008
 			public const int lon = 2131099656;
+			
+			// aapt resource value: 0x7f060010
+			public const int scrollView1 = 2131099664;
 			
 			// aapt resource value: 0x7f06000a
 			public const int speed = 2131099658;

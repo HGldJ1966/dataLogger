@@ -71,7 +71,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/gridLayout1"
             android:rowCount="1"
-            android:columnCount="2"
+            android:columnCount="3"
             android:orientation="horizontal"
             android:alignmentMode="alignBounds"
             android:useDefaultMargins="false">
@@ -81,12 +81,23 @@
             <Button
                 android:text="Report"
                 android:id="@+id/button_report" />
+            <Button
+                android:text="Get Pos"
+                android:id="@+id/button1"
+                android:textColor="#ffffffff" />
         </GridLayout>
-        <ImageView
-            android:src="@android:drawable/ic_menu_gallery"
-            android:layout_width="fill_parent"
-            android:layout_height="300.0dp"
-            android:id="@+id/imageView1"
-            android:adjustViewBounds="true" />
+        <ScrollView
+            android:minWidth="25px"
+            android:minHeight="25px"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/scrollView1">
+            <ImageView
+                android:src="@android:drawable/ic_menu_gallery"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/imageView1"
+                android:adjustViewBounds="true" />
+        </ScrollView>
     </LinearLayout>
 </LinearLayout>

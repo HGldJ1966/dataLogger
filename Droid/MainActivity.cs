@@ -15,6 +15,7 @@ using Android.Service;
 using Android.Net;
 using System.Threading.Tasks;
 using Java.Util;
+using DataLogger.Droid.Services;
 
 namespace DataLogger.Droid
 {
@@ -79,8 +80,7 @@ namespace DataLogger.Droid
 			//Picture
 			if (IsThereAnAppToTakePictures())
 			{
-				string toast3 = string.Format("Chack app");
-				Toast.MakeText(this, toast3, ToastLength.Long).Show();
+				
 				CreateDirectoryForPictures();
 
 				string toast4 = string.Format("Create directory");
@@ -160,11 +160,13 @@ namespace DataLogger.Droid
 
 		private void TakeAPicture(object sender, System.EventArgs eventArgs)
 		{
-			
-			string toast5 = string.Format("Take A Pic");
+			//Pause collect GPS points.
+			OnPause();
+
+			string toast5 = string.Format("Take A Pic {0}",eventArgs);
 			Toast.MakeText(this, toast5, ToastLength.Long).Show();
 				
-				Intent intent = new Intent(MediaStore.ActionImageCapture);
+			Intent intent = new Intent(MediaStore.ActionImageCapture);
 
 			App._file = new File(App._dir, string.Format("myPhoto_{0}.jpg",UUID.RandomUUID()));
 
@@ -172,7 +174,8 @@ namespace DataLogger.Droid
 			intent.PutExtra(MediaStore.ExtraOutput, Uri.FromFile(App._file));
 			StartActivityForResult(intent, 0);
 
-
+			//Resume collect GPS
+			OnResume();
 		}
 
 		protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
@@ -313,186 +316,6 @@ namespace DataLogger.Droid
 		}
 	}
 
-
-	//TRACK LOCATION IN BACKGROUND
-
-	public class LocationServiceBinder : Binder
-	{
-		public LocationService Service
-		{
-			get { return this.service; }
-		}
-		protected LocationService service;
-
-		public bool IsBound { get; set; }
-		public LocationServiceBinder(LocationService service) { this.service = service; }
-	}
-
-	[Service]
-	public class LocationService : Service, ILocationListener
-	{
-		IBinder binder;
-		protected LocationManager locMgr = Application.Context.GetSystemService("location") as LocationManager;
-
-		protected readonly string logTag = "App";
-		LocationManager _locationManager;
-
-		string _locationProvider;
-
-
-		public void StartLocationUpdates()
-		{
-
-			_locationManager = (LocationManager)GetSystemService(LocationService);
-
-			Criteria criteriaForLocationService = new Criteria
-			{
-				Accuracy = Accuracy.Fine
-			};
-			IList<string> acceptableLocationProviders = _locationManager.GetProviders(criteriaForLocationService, true);
-
-
-			Log.Debug(logTag, "Using " + _locationProvider + ".");
-
-
-			var locationCriteria = new Criteria();
-			locationCriteria.Accuracy = Accuracy.NoRequirement;
-			locationCriteria.PowerRequirement = Power.NoRequirement;
-			var locationProvider = locMgr.GetBestProvider(locationCriteria, true);
-			locMgr.RequestLocationUpdates(locationProvider, 1000, 0, this);
-
-
-
-		}
-
-		public event System.EventHandler<LocationChangedEventArgs> LocationChanged = delegate { };
-		public event System.EventHandler<ProviderDisabledEventArgs> ProviderDisabled = delegate { };
-		public event System.EventHandler<ProviderEnabledEventArgs> ProviderEnabled = delegate { };
-		public event System.EventHandler<StatusChangedEventArgs> StatusChanged = delegate { };
-
-		public override void OnCreate()
-		{
-			base.OnCreate();
-			Log.Debug(logTag, "OnCreate called in the Location Service");
-		}
-
-		// This gets called when StartService is called in our App class
-		//[Obsolete("deprecated in base class")]
-		public override StartCommandResult OnStartCommand(Intent intent, StartCommandFlags flags, int startId)
-		{
-			Log.Debug(logTag, "LocationService started");
-
-			return StartCommandResult.Sticky;
-		}
-
-		// This gets called once, the first time any client bind to the Service
-		// and returns an instance of the LocationServiceBinder. All future clients will
-		// reuse the same instance of the binder
-		public override IBinder OnBind(Intent intent)
-		{
-			Log.Debug(logTag, "Client now bound to service");
-
-			binder = new LocationServiceBinder(this);
-			return binder;
-		}
-
-
-
-		public override void OnDestroy()
-		{
-			base.OnDestroy();
-			Log.Debug(logTag, "Service has been terminated");
-
-			// Stop getting updates from the location manager:
-			locMgr.RemoveUpdates(this);
-		}
-
-		#region ILocationListener implementation
-		// ILocationListener is a way for the Service to subscribe for updates
-		// from the System location Service
-
-		public void OnLocationChanged(Location location)
-		{
-			this.LocationChanged(this, new LocationChangedEventArgs(location));
-
-			// This should be updating every time we request new location updates
-			// both when teh app is in the background, and in the foreground
-			Log.Debug(logTag, String.Format("Latitude is {0}", location.Latitude));
-			Log.Debug(logTag, String.Format("Longitude is {0}", location.Longitude));
-			/*
-			Log.Debug(logTag, String.Format("Altitude is {0}", location.Altitude));
-			Log.Debug(logTag, String.Format("Speed is {0}", location.Speed));
-			Log.Debug(logTag, String.Format("Accuracy is {0}", location.Accuracy));
-			Log.Debug(logTag, String.Format("Bearing is {0}", location.Bearing));
-			*/
-		}
-
-		public void OnProviderDisabled(string provider)
-		{
-			this.ProviderDisabled(this, new ProviderDisabledEventArgs(provider));
-		}
-
-		public void OnProviderEnabled(string provider)
-		{
-			this.ProviderEnabled(this, new ProviderEnabledEventArgs(provider));
-		}
-
-		public void OnStatusChanged(string provider, Availability status, Bundle extras)
-		{
-			this.StatusChanged(this, new StatusChangedEventArgs(provider, status, extras));
-		}
-		#endregion
-
-	}
-
-
-
-	public class LocationServiceConnection : Java.Lang.Object, IServiceConnection
-	{
-		public event System.EventHandler<ServiceConnectedEventArgs> ServiceConnected = delegate { };
-
-		public LocationServiceBinder Binder
-		{
-			get { return this.binder; }
-			set { this.binder = value; }
-		}
-		protected LocationServiceBinder binder;
-
-		public LocationServiceConnection(LocationServiceBinder binder)
-		{
-			if (binder != null)
-			{
-				this.binder = binder;
-			}
-		}
-
-		// This gets called when a client tries to bind to the Service with an Intent and an 
-		// instance of the ServiceConnection. The system will locate a binder associated with the 
-		// running Service 
-		public void OnServiceConnected(ComponentName name, IBinder service)
-		{
-			// cast the binder located by the OS as our local binder subclass
-			LocationServiceBinder serviceBinder = service as LocationServiceBinder;
-			if (serviceBinder != null)
-			{
-				this.binder = serviceBinder;
-				this.binder.IsBound = true;
-				Log.Debug("ServiceConnection", "OnServiceConnected Called");
-				// raise the service connected event
-				this.ServiceConnected(this, new ServiceConnectedEventArgs() { Binder = service });
-
-				// now that the Service is bound, we can start gathering some location data
-				serviceBinder.Service.StartLocationUpdates();
-			}
-		}
-
-		// This will be called when the Service unbinds, or when the app crashes
-		public void OnServiceDisconnected(ComponentName name)
-		{
-			this.binder.IsBound = false;
-			Log.Debug("ServiceConnection", "Service unbound");
-		}
-	}
 
 	public class ServiceConnectedEventArgs : System.EventArgs
 	{
