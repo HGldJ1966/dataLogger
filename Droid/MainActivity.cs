@@ -24,11 +24,6 @@ namespace DataLogger.Droid
 	{
 		ImageView _imageView;
 		static readonly string TAG = "X:" + typeof(Activity).Name;
-		//TextView _addressText;
-		Location _currentLocation;
-		LocationManager _locationManager;
-
-		TextView _locationText;
 
 		readonly string logTag = "MainActivity";
 		// make our labels
@@ -76,14 +71,16 @@ namespace DataLogger.Droid
 			};
 			*/
 
+
+			FindViewById<Button>(Resource.Id.bt_getPos).Click += getCurrentPos;
+
+
 			//Picture
 			if (IsThereAnAppToTakePictures())
 			{
 				
 				CreateDirectoryForPictures();
 
-				string toast4 = string.Format("Create directory");
-				Toast.MakeText(this, toast4, ToastLength.Long).Show();
 
 				Button button = FindViewById<Button>(Resource.Id.bnt_takePic);
 				_imageView = FindViewById<ImageView>(Resource.Id.imageView1);
@@ -91,9 +88,7 @@ namespace DataLogger.Droid
 			}
 
 
-			//LOCATION
-			//_addressText = FindViewById<TextView>(Resource.Id.textView_address);
-			_locationText = FindViewById<TextView>(Resource.Id.textView_location);
+			//LOCATION 
 
 			//InitializeLocationManager();
 
@@ -127,6 +122,20 @@ namespace DataLogger.Droid
 
 		}
 
+		void getCurrentPos(object sender, EventArgs eventArgs)
+		{
+			string toast4 = string.Format("get current position");
+			Toast.MakeText(this, toast4, ToastLength.Long).Show();
+			// notifies us of location changes from the system
+			App.Current.LocationService.LocationChanged += HandleLocationChanged;
+			//notifies us of user changes to the location provider (ie the user disables or enables GPS)
+			App.Current.LocationService.ProviderDisabled += HandleProviderDisabled;
+			App.Current.LocationService.ProviderEnabled += HandleProviderEnabled;
+			// notifies us of the changing status of a provider (ie GPS no longer available)
+			App.Current.LocationService.StatusChanged += HandleStatusChanged;
+		}
+
+
 		bool IsThereAnAppToTakePictures()
 		{
 			
@@ -157,14 +166,11 @@ namespace DataLogger.Droid
 			}
 		}
 
-		private void TakeAPicture(object sender, System.EventArgs eventArgs)
+		private void TakeAPicture(object sender, EventArgs eventArgs)
 		{
 			//Pause collect GPS points.
 			OnPause();
 
-			string toast5 = string.Format("Take A Pic {0}",eventArgs);
-			Toast.MakeText(this, toast5, ToastLength.Long).Show();
-				
 			Intent intent = new Intent(MediaStore.ActionImageCapture);
 
 			App._file = new File(App._dir, string.Format("myPhoto_{0}.jpg",UUID.RandomUUID()));
@@ -202,7 +208,7 @@ namespace DataLogger.Droid
 			}
 
 			// Dispose of the Java side bitmap.
-			System.GC.Collect();
+			GC.Collect();
 		}
 
 

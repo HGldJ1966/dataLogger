@@ -70,7 +70,7 @@ namespace DataLogger.Droid
 			public const int bnt_takePic = 2131099661;
 			
 			// aapt resource value: 0x7f06000f
-			public const int button1 = 2131099663;
+			public const int bt_getPos = 2131099663;
 			
 			// aapt resource value: 0x7f06000e
 			public const int button_report = 2131099662;
@@ -112,7 +112,7 @@ namespace DataLogger.Droid
 			public const int textView4 = 2131099652;
 			
 			// aapt resource value: 0x7f060006
-			public const int textView_location = 2131099654;
+			public const int textView5 = 2131099654;
 			
 			static Id()
 			{

@@ -35,22 +35,23 @@
             android:layout_height="wrap_content"
             android:id="@+id/editText_msg" />
         <TextView
-            android:text="Location : (This may take a bit of time to display : Please wait)"
+            android:text="Location may takes times to display, please wait~"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/textView_location" />
+            android:id="@+id/textView5" />
         <TextView
-            android:text="lat"
+            android:text="Latitude :"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/lat" />
         <TextView
-            android:text="lon"
+            android:text="Longitude :"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/lon" />
         <TextView
-            android:text="Alt"
+            android:text="Altitude :"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/alt" />
@@ -83,7 +84,7 @@
                 android:id="@+id/button_report" />
             <Button
                 android:text="Get Pos"
-                android:id="@+id/button1"
+                android:id="@+id/bt_getPos"
                 android:textColor="#ffffffff" />
         </GridLayout>
         <ScrollView
