@@ -8,31 +8,36 @@ using Android.Graphics;
 using System.Collections.Generic;
 using Android.Provider;
 using Java.Lang;
-using Android.Net;
 using Android.Locations;
-using System.Linq;
-
+using Android.Util;
+using Android.Net;
+using System.Threading.Tasks;
+using Java.Util;
+using DataLogger.Droid.Services;
+using System;
 
 namespace DataLogger.Droid
 {
 	[Activity(Label = "DataLogger", MainLauncher = true, Icon = "@mipmap/icon")]
 
-
-
-	public class MainActivity : Activity, ILocationListener
+	public class MainActivity : Activity
 	{
-
 		ImageView _imageView;
-		//static readonly string TAG = "X:" + typeof(Activity).Name;
-		//TextView _addressText;
-		Location _currentLocation;
-		LocationManager _locationManager;
-		string _locationProvider;
-		TextView _locationText;
+		static readonly string TAG = "X:" + typeof(Activity).Name;
 
-		protected override void OnCreate(Bundle savedInstanceState)
+		readonly string logTag = "MainActivity";
+		// make our labels
+		TextView latText;
+		TextView longText;
+		TextView altText;
+		TextView speedText;
+		TextView accText;
+
+		protected override void OnCreate(Bundle bundle)
 		{
-			base.OnCreate(savedInstanceState);
+			base.OnCreate(bundle);
+
+		    Log.Debug(logTag, "OnCreate: Location app is becoming active");
 
 			// Set our view from the "main" layout resource
 			SetContentView(Resource.Layout.Main);
@@ -67,22 +72,78 @@ namespace DataLogger.Droid
 			*/
 
 
+			FindViewById<Button>(Resource.Id.bt_getPos).Click += getCurrentPos;
+
+
 			//Picture
 			if (IsThereAnAppToTakePictures())
 			{
+				
 				CreateDirectoryForPictures();
+
 
 				Button button = FindViewById<Button>(Resource.Id.bnt_takePic);
 				_imageView = FindViewById<ImageView>(Resource.Id.imageView1);
 				button.Click += TakeAPicture;
 			}
 
-			//LOCATION
-			//_addressText = FindViewById<TextView>(Resource.Id.textView_address);
-			_locationText = FindViewById<TextView>(Resource.Id.textView_location);
+
+			//LOCATION 
+
+			//InitializeLocationManager();
+
+			App.Current.LocationServiceConnected += (object sender, ServiceConnectedEventArgs e) =>
+			{
+				Log.Debug(logTag, "ServiceConnected Event Raised");
+				// notifies us of location changes from the system
+				App.Current.LocationService.LocationChanged += HandleLocationChanged;
+				//notifies us of user changes to the location provider (ie the user disables or enables GPS)
+				App.Current.LocationService.ProviderDisabled += HandleProviderDisabled;
+				App.Current.LocationService.ProviderEnabled += HandleProviderEnabled;
+				// notifies us of the changing status of a provider (ie GPS no longer available)
+				App.Current.LocationService.StatusChanged += HandleStatusChanged;
+			};
+
+			latText = FindViewById<TextView>(Resource.Id.lat);
+			longText = FindViewById<TextView>(Resource.Id.lon);
+			altText = FindViewById<TextView>(Resource.Id.alt);
+			speedText = FindViewById<TextView>(Resource.Id.speed);
+			//bearText = FindViewById<TextView>(Resource.Id.bear);
+			accText = FindViewById<TextView>(Resource.Id.acc);
+
+			altText.Text = "altitude";
+			speedText.Text = "speed";
+			//bearText.Text = "bearing";
+			accText.Text = "accuracy";
+
+			// Start the location service:
+			App.StartLocationService();
 
 
-			InitializeLocationManager();
+		}
+
+		void getCurrentPos(object sender, EventArgs eventArgs)
+		{
+			string toast4 = string.Format("get current position");
+			Toast.MakeText(this, toast4, ToastLength.Long).Show();
+			// notifies us of location changes from the system
+			App.Current.LocationService.LocationChanged += HandleLocationChanged;
+			//notifies us of user changes to the location provider (ie the user disables or enables GPS)
+			App.Current.LocationService.ProviderDisabled += HandleProviderDisabled;
+			App.Current.LocationService.ProviderEnabled += HandleProviderEnabled;
+			// notifies us of the changing status of a provider (ie GPS no longer available)
+			App.Current.LocationService.StatusChanged += HandleStatusChanged;
+		}
+
+
+		bool IsThereAnAppToTakePictures()
+		{
+			
+			Intent intent = new Intent(MediaStore.ActionImageCapture);
+			IList<ResolveInfo> availableActivities =
+				PackageManager.QueryIntentActivities(intent, PackageInfoFlags.MatchDefaultOnly);
+			return availableActivities != null && availableActivities.Count > 0;
+			
 
 		}
 
@@ -97,30 +158,29 @@ namespace DataLogger.Droid
 		private void CreateDirectoryForPictures()
 		{
 			App._dir = new File(
-				Environment.GetExternalStoragePublicDirectory(
-					Environment.DirectoryPictures), "CameraAppDemo");
+				Android.OS.Environment.GetExternalStoragePublicDirectory(
+					Android.OS.Environment.DirectoryPictures), "CameraAppDemo");
 			if (!App._dir.Exists())
 			{
 				App._dir.Mkdirs();
 			}
 		}
 
-		private bool IsThereAnAppToTakePictures()
+		private void TakeAPicture(object sender, EventArgs eventArgs)
 		{
-			Intent intent = new Intent(MediaStore.ActionImageCapture);
-			IList<ResolveInfo> availableActivities =
-				PackageManager.QueryIntentActivities(intent, PackageInfoFlags.MatchDefaultOnly);
-			return availableActivities != null && availableActivities.Count > 0;
-		}
+			//Pause collect GPS points.
+			OnPause();
 
-		private void TakeAPicture(object sender, System.EventArgs eventArgs)
-		{
 			Intent intent = new Intent(MediaStore.ActionImageCapture);
 
-			App._file = new File(App._dir, String.Format("myPhoto_{0}.jpg"));
+			App._file = new File(App._dir, string.Format("myPhoto_{0}.jpg",UUID.RandomUUID()));
 
-			intent.PutExtra(MediaStore.ExtraOutput, Uri.FromFile(App._file));
+			//App._file = new File(App._dir, String.Format("myPhoto_{0}.jpg", guid.NewGuid()));
+			intent.PutExtra(MediaStore.ExtraOutput, Android.Net.Uri.FromFile(App._file));
 			StartActivityForResult(intent, 0);
+
+			//Resume collect GPS
+			OnResume();
 		}
 
 		protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
@@ -130,7 +190,7 @@ namespace DataLogger.Droid
 			// Make it available in the gallery
 
 			Intent mediaScanIntent = new Intent(Intent.ActionMediaScannerScanFile);
-			Uri contentUri = Uri.FromFile(App._file);
+			Android.Net.Uri contentUri = Android.Net.Uri.FromFile(App._file);
 			mediaScanIntent.SetData(contentUri);
 			SendBroadcast(mediaScanIntent);
 
@@ -148,73 +208,87 @@ namespace DataLogger.Droid
 			}
 
 			// Dispose of the Java side bitmap.
-			System.GC.Collect();
+			GC.Collect();
 		}
 
-		void InitializeLocationManager()
-		{
-			string toast2 = string.Format("initial location");
-			Toast.MakeText(this, toast2, ToastLength.Long).Show();
-			_locationManager = (LocationManager)GetSystemService(LocationService);
-			Criteria criteriaForLocationService = new Criteria
-			{
-				Accuracy = Accuracy.Fine
-			};
-			IList<string> acceptableLocationProviders = _locationManager.GetProviders(criteriaForLocationService, true);
 
-			if (acceptableLocationProviders.Any())
-			{
-				_locationProvider = acceptableLocationProviders.First();
-			}
-			else
-			{
-				_locationProvider = string.Empty;
-			}
-			//Log.Debug(TAG, "Using " + _locationProvider + ".");
-		}
-
-		public void OnLocationChanged(Location location)
+		public void OnProviderDisabled(string provider)
 		{
 
-			_currentLocation = location;
-			if (_currentLocation == null)
-			{
-				_locationText.Text = "Unable to determine your location. Try again in a short while.";
-			}
-			else
-			{
-				_locationText.Text = string.Format("{0:f6},{1:f6}", _currentLocation.Latitude, _currentLocation.Longitude);
-				//Address address = await ReverseGeocodeCurrentLocation();
-				//DisplayAddress(address);
-			}
-		}
-
-		public void OnProviderDisabled(string provider) { 
-		
-		}
-
-		public void OnProviderEnabled(string provider) { }
-
-		public void OnStatusChanged(string provider, Availability status, Bundle extras) { }
-
-		protected override void OnResume()
-		{
-			base.OnResume();
-			_locationManager.RequestLocationUpdates(_locationProvider, 0, 0, this);
 		}
 
 		protected override void OnPause()
 		{
+			Log.Debug(logTag, "OnPause: Location app is moving to background");
 			base.OnPause();
-			_locationManager.RemoveUpdates(this);
 		}
-	}
 
-	public static class App
-	{
-		public static File _file;
-		public static File _dir;
-		public static Bitmap bitmap;
+		public void OnProviderEnabled(string provider) { }
+
+		public void OnStatusChanged(string provider, Availability status, Bundle extras)
+		{
+			Log.Debug(TAG, "{0}, {1}", provider, status);
+		}
+
+		protected override void OnResume()
+		{
+			Log.Debug(logTag, "OnResume: Location app is moving into foreground");
+			base.OnResume();
+		}
+
+		protected override void OnDestroy()
+		{
+			Log.Debug(logTag, "OnDestroy: Location app is becoming inactive");
+			base.OnDestroy();
+
+			// Stop the location service:
+			App.StopLocationService();
+		}
+
+
+		#region Android Location Service methods
+
+		///<summary>
+		/// Updates UI with location data
+		/// </summary>
+		public void HandleLocationChanged(object sender, LocationChangedEventArgs e)
+		{
+			Location location = e.Location;
+			Log.Debug(logTag, "Foreground updating");
+
+			// these events are on a background thread, need to update on the UI thread
+			RunOnUiThread(() =>
+			{
+				latText.Text = string.Format("Latitude: {0:f6}", location.Latitude);
+				longText.Text = string.Format("Longitude: {0:f6}", location.Longitude);
+
+				altText.Text = string.Format("Altitude: {0}", location.Altitude);
+				/*
+				speedText.Text = String.Format("Speed: {0}", location.Speed);
+				accText.Text = String.Format("Accuracy: {0}", location.Accuracy);
+				bearText.Text = String.Format("Bearing: {0}", location.Bearing);
+				*/
+			});
+
+		}
+
+		public void HandleProviderDisabled(object sender, ProviderDisabledEventArgs e)
+		{
+			Log.Debug(logTag, "Location provider disabled event raised");
+		}
+
+		public void HandleProviderEnabled(object sender, ProviderEnabledEventArgs e)
+		{
+			Log.Debug(logTag, "Location provider enabled event raised");
+		}
+
+		public void HandleStatusChanged(object sender, StatusChangedEventArgs e)
+		{
+			Log.Debug(logTag, "Location status changed, event raised");
+		}
+
+		#endregion
+
 	}
 
 	public static class BitmapHelpers
@@ -248,4 +322,113 @@ namespace DataLogger.Droid
 	}
 
 
+	public class App
+	{
+		public static File _file;
+		public static File _dir;
+		public static Bitmap bitmap;
+
+		// events
+
+		public event EventHandler<ServiceConnectedEventArgs> LocationServiceConnected = delegate { };
+
+		// declarations
+		protected readonly string logTag = "App";
+		protected static LocationServiceConnection locationServiceConnection;
+
+		// properties
+
+		public static App Current
+		{
+			get { return current; }
+		}
+		private static App current;
+
+		public LocationService LocationService
+		{
+			
+			get
+			{
+				if (locationServiceConnection.Binder == null)
+					throw new Java.Lang.Exception("Service not bound yet");
+				// note that we use the ServiceConnection to get the Binder, and the Binder to get the Service here
+				return locationServiceConnection.Binder.Service;
+			}
+		}
+
+		#region Application context
+
+		static App()
+		{
+			current = new App();
+		}
+
+		protected App()
+		{
+			// create a new service connection so we can get a binder to the service
+			locationServiceConnection = new LocationServiceConnection(null);
+
+			// this event will fire when the Service connection in the OnServiceConnected call 
+			locationServiceConnection.ServiceConnected += (object sender, ServiceConnectedEventArgs e) =>
+			{
+
+				Log.Debug(logTag, "Service Connected");
+				// we will use this event to notify MainActivity when to start updating the UI
+				LocationServiceConnected(this, e);
+
+			};
+		}
+
+
+		public static void StartLocationService()
+		{
+			// Starting a service like this is blocking, so we want to do it on a background thread
+			new Task(() =>
+			{
+
+				// Start our main service
+				Log.Debug("App", "Calling StartService");
+				Application.Context.StartService(new Intent(Application.Context, typeof(LocationService)));
+
+				// bind our service (Android goes and finds the running service by type, and puts a reference
+				// on the binder to that service)
+				// The Intent tells the OS where to find our Service (the Context) and the Type of Service
+				// we're looking for (LocationService)
+				Intent locationServiceIntent = new Intent(Application.Context, typeof(LocationService));
+				Log.Debug("App", "Calling service binding");
+
+				// Finally, we can bind to the Service using our Intent and the ServiceConnection we
+				// created in a previous step.
+				Application.Context.BindService(locationServiceIntent, locationServiceConnection, Bind.AutoCreate);
+			}).Start();
+		}
+
+		public static void StopLocationService()
+		{
+			// Check for nulls in case StartLocationService task has not yet completed.
+			Log.Debug("App", "StopLocationService");
+
+			// Unbind from the LocationService; otherwise, StopSelf (below) will not work:
+			if (locationServiceConnection != null)
+			{
+				Log.Debug("App", "Unbinding from LocationService");
+				Application.Context.UnbindService(locationServiceConnection);
+			}
+
+			// Stop the LocationService:
+			if (Current.LocationService != null)
+			{
+				Log.Debug("App", "Stopping the LocationService");
+				Current.LocationService.StopSelf();
+			}
+		}
+
+		#endregion
+
+	}
+
 }
+
+
+
+
