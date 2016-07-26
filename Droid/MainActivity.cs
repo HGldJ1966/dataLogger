@@ -38,9 +38,6 @@ namespace DataLogger.Droid
 		SensorManager _sensorManager;
 		TextView _sensorTextView;
 
-
-
-
 		protected override void OnCreate(Bundle bundle)
 		{
 			base.OnCreate(bundle);
@@ -62,8 +59,6 @@ namespace DataLogger.Droid
 
 			adapter.SetDropDownViewResource(Android.Resource.Layout.SimpleSpinnerDropDownItem);
 			spinner.Adapter = adapter;
-
-
 
 			//report message
 			var editText_msg = FindViewById<EditText>(Resource.Id.editText_msg);
@@ -274,7 +269,7 @@ namespace DataLogger.Droid
 		{
 			Log.Debug(logTag, "OnPause: Location app is moving to background");
 			base.OnPause();
-			_sensorManager.UnregisterListener(this);
+
 		}
 
 		public void OnProviderEnabled(string provider) { }
@@ -297,7 +292,7 @@ namespace DataLogger.Droid
 		{
 			Log.Debug(logTag, "OnDestroy: Location app is becoming inactive");
 			base.OnDestroy();
-
+			_sensorManager.UnregisterListener(this);
 			// Stop the location service:
 			App.StopLocationService();
 		}
@@ -372,8 +367,8 @@ namespace DataLogger.Droid
 		{
 			lock (_syncLock)
 			{
-				_sensorTextView.Text = string.Format("x={0:f}, y={1:f}, z={2:f}", e.Values[0], e.Values[1], e.Values[2]);
-				GlobalVariables.accelerometer = string.Format("Accelerometer: x={0:f}, y={1:f}, z={2:f}", e.Values[0], e.Values[1], e.Values[2]);
+				_sensorTextView.Text = string.Format("Accelerometer: x={0:f}, y={1:f}, z={2:f}", e.Values[0], e.Values[1], e.Values[2]);
+				GlobalVariables.accelerometer = string.Format("x={0:f}, y={1:f}, z={2:f}", e.Values[0], e.Values[1], e.Values[2]);
 			}
 		}
 
