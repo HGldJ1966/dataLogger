@@ -164,19 +164,20 @@ namespace DataLogger.Droid
 				App.StartLocationService();
 				GlobalVariables.isStartTracking = false;
 				FindViewById<Button>(Resource.Id.bnt_start_stop).Text = "Stop tracking";
+				FindViewById<Button>(Resource.Id.bnt_start_stop).SetBackgroundColor(Color.Red);
 				toast = string.Format("START");
 				FindViewById<TextView>(Resource.Id.lat).Text = "Latitude: {wait}";
 				FindViewById<TextView>(Resource.Id.lon).Text = "Longitude: {wait}";
 				FindViewById<TextView>(Resource.Id.alt).Text = "Altitude: {wait}";
 				FindViewById<TextView>(Resource.Id.speed).Text = "Speed: {wait}";
 				FindViewById<TextView>(Resource.Id.acc).Text = "Accuracy: {wait}";
-
 			}
 
 			else { 
 				App.StopLocationService();
 				GlobalVariables.isStartTracking = true;
 				FindViewById<Button>(Resource.Id.bnt_start_stop).Text = "Start tracking";
+				FindViewById<Button>(Resource.Id.bnt_start_stop).SetBackgroundColor(Color.Gray);
 				toast = string.Format("STOP");
 
 			}

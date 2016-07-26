@@ -12,7 +12,9 @@
             android:text="Start Tracking"
             android:id="@+id/bnt_start_stop"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textColor="#ffffffff"
+            android:background="#ff19998f" />
         <TextView
             android:text="Report"
             android:textAppearance="?android:attr/textAppearanceLarge"
