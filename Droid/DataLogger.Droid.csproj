@@ -52,6 +52,7 @@
     <Compile Include="Services\LocationServiceConnection.cs" />
     <Compile Include="Services\ServiceConnectedEventArgs.cs" />
     <Compile Include="GlobalVariables.cs" />
+    <Compile Include="sendLogData.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -67,6 +68,8 @@
     <AndroidResource Include="Resources\mipmap-xhdpi\Icon.png" />
     <AndroidResource Include="Resources\mipmap-xxhdpi\Icon.png" />
     <AndroidResource Include="Resources\mipmap-xxxhdpi\Icon.png" />
+    <AndroidResource Include="Resources\layout\Tap.axml" />
+    <AndroidResource Include="Resources\layout\ReportLayout.axml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\" />

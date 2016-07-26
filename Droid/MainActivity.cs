@@ -15,11 +15,13 @@ using Java.Util;
 using DataLogger.Droid.Services;
 using System;
 using Android.Hardware;
+using Android.Views;
+using Android.Runtime;
 
 namespace DataLogger.Droid
 {
 	[Activity(Label = "Pedestrian report", MainLauncher = true, Icon = "@mipmap/icon", ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation,
-	          ScreenOrientation = ScreenOrientation.Portrait)]
+			  ScreenOrientation = ScreenOrientation.Portrait)]
 
 	public class MainActivity : Activity, ISensorEventListener
 	{
@@ -42,14 +44,11 @@ namespace DataLogger.Droid
 		{
 			base.OnCreate(bundle);
 
-		    Log.Debug(logTag, "OnCreate: Location app is becoming active");
+			Log.Debug(logTag, "OnCreate: Location app is becoming active");
 
 			// Set our view from the "main" layout resource
 			SetContentView(Resource.Layout.Main);
 
-
-			// Set our view from the "Main" layout resource
-			SetContentView(Resource.Layout.Main);
 
 			Spinner spinner = FindViewById<Spinner>(Resource.Id.spinner_mode);
 
@@ -68,9 +67,7 @@ namespace DataLogger.Droid
 			/*
 			editText_msg.TextChanged += (object sender, Android.Text.TextChangedEventArgs e) =>
 			{
-
 				textView.Text = e.Text.ToString();
-
 			};
 			*/
 
@@ -79,7 +76,7 @@ namespace DataLogger.Droid
 			//Picture
 			if (IsThereAnAppToTakePictures())
 			{
-				
+
 				CreateDirectoryForPictures();
 
 
@@ -121,15 +118,82 @@ namespace DataLogger.Droid
 			_sensorManager = (SensorManager)GetSystemService(Context.SensorService);
 			_sensorTextView = FindViewById<TextView>(Resource.Id.accelerometer_text);
 
+			this.ActionBar.NavigationMode = ActionBarNavigationMode.Tabs;
+
+			AddTab("Tab 1", Resource.Mipmap.Icon, new SampleTabFragment());
+			AddTab("Tab 2", Resource.Mipmap.Icon, new SampleTabFragment2());
+
+			if (bundle != null)
+				this.ActionBar.SelectTab(this.ActionBar.GetTabAt(bundle.GetInt("tab")));
+
 		}
 
 
-		void writeLog(string txt) {
+		protected override void OnSaveInstanceState(Bundle outState)
+		{
+			outState.PutInt("tab", this.ActionBar.SelectedNavigationIndex);
+
+			base.OnSaveInstanceState(outState);
+		}
+
+		void AddTab(string tabText, int iconResourceId, Fragment view)
+		{
+			var tab = this.ActionBar.NewTab();
+			tab.SetText(tabText);
+			tab.SetIcon(Resource.Mipmap.Icon);
+
+			// must set event handler before adding tab
+			tab.TabSelected += delegate (object sender, ActionBar.TabEventArgs e)
+			{
+				var fragment = this.FragmentManager.FindFragmentById(Resource.Id.fragmentContainer);
+				if (fragment != null)
+					e.FragmentTransaction.Remove(fragment);
+				e.FragmentTransaction.Add(Resource.Id.fragmentContainer, view);
+			};
+			tab.TabUnselected += delegate (object sender, ActionBar.TabEventArgs e)
+			{
+				e.FragmentTransaction.Remove(view);
+			};
+
+			this.ActionBar.AddTab(tab);
+		}
+
+		class SampleTabFragment : Fragment
+		{
+			public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+			{
+				base.OnCreateView(inflater, container, savedInstanceState);
+
+				var view = inflater.Inflate(Resource.Layout.ReportLayout, container, false);
+				var sampleTextView = view.FindViewById<TextView>(Resource.Id.textView_reportLayout);
+				sampleTextView.Text = "sample fragment text";
+
+				return view;
+			}
+		}
+
+		class SampleTabFragment2 : Fragment
+		{
+			public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+			{
+				base.OnCreateView(inflater, container, savedInstanceState);
+
+				var view = inflater.Inflate(Resource.Layout.Tap, container, false);
+				var sampleTextView = view.FindViewById<TextView>(Resource.Id.sampleTextView);
+				sampleTextView.Text = "sample fragment text 2";
+
+				return view;
+			}
+		}
+
+
+		void writeLog(string txt)
+		{
 			//create file name for date
 
 			string today = DateTime.Now.ToString("dd-MM-yyy");
 			var sdCardpath = Android.OS.Environment.ExternalStorageDirectory.Path;
-			var filePath = System.IO.Path.Combine(sdCardpath,string.Concat(today,"_datalogger.txt"));
+			var filePath = System.IO.Path.Combine(sdCardpath, string.Concat(today, "_datalogger.txt"));
 
 			using (var writer = new System.IO.StreamWriter(filePath, true))
 			{
@@ -139,7 +203,8 @@ namespace DataLogger.Droid
 
 		}
 
-		string getCurrentTime() { 
+		string getCurrentTime()
+		{
 			DateTime now = DateTime.Now.ToLocalTime();
 
 
@@ -153,7 +218,7 @@ namespace DataLogger.Droid
 
 
 		// stop tracking GPS
-		void trackingGPS(object sender, EventArgs eventArgs) 
+		void trackingGPS(object sender, EventArgs eventArgs)
 		{
 
 			string toast;
@@ -172,7 +237,7 @@ namespace DataLogger.Droid
 				FindViewById<TextView>(Resource.Id.acc).Text = "Accuracy: {wait}";
 			}
 
-			else { 
+			else {
 				App.StopLocationService();
 				GlobalVariables.isStartTracking = true;
 				FindViewById<Button>(Resource.Id.bnt_start_stop).Text = "Start tracking";
@@ -186,12 +251,12 @@ namespace DataLogger.Droid
 
 		bool IsThereAnAppToTakePictures()
 		{
-			
+
 			Intent intent = new Intent(MediaStore.ActionImageCapture);
 			IList<ResolveInfo> availableActivities =
 				PackageManager.QueryIntentActivities(intent, PackageInfoFlags.MatchDefaultOnly);
 			return availableActivities != null && availableActivities.Count > 0;
-			
+
 
 		}
 
@@ -221,7 +286,7 @@ namespace DataLogger.Droid
 
 			Intent intent = new Intent(MediaStore.ActionImageCapture);
 
-			App._file = new File(App._dir, string.Format("myPhoto_{0}.jpg",UUID.RandomUUID()));
+			App._file = new File(App._dir, string.Format("myPhoto_{0}.jpg", UUID.RandomUUID()));
 
 			//App._file = new File(App._dir, String.Format("myPhoto_{0}.jpg", guid.NewGuid()));
 			intent.PutExtra(MediaStore.ExtraOutput, Android.Net.Uri.FromFile(App._file));
@@ -318,16 +383,17 @@ namespace DataLogger.Droid
 
 				//write location
 				string currentTime = getCurrentTime();
-				if (GlobalVariables.isWriteLog) {
+				if (GlobalVariables.isWriteLog)
+				{
 					//Write lat,lon to file
 					txt = string.Format("{0}, {1:f6}, {2:f6}, {3:f6}, {4:f6}, {5:f6}, {6}",
 										currentTime,
-					                    location.Latitude,
+										location.Latitude,
 										location.Longitude,
 										location.Altitude,
-					                    location.Speed,
-					                    location.Accuracy,
-					                    GlobalVariables.accelerometer
+										location.Speed,
+										location.Accuracy,
+										GlobalVariables.accelerometer
 										);
 					writeLog(txt);
 
@@ -430,7 +496,7 @@ namespace DataLogger.Droid
 
 		public LocationService LocationService
 		{
-			
+
 			get
 			{
 				if (locationServiceConnection.Binder == null)
@@ -488,9 +554,6 @@ namespace DataLogger.Droid
 				GlobalVariables.isWriteLog = true;
 			}).Start();
 
-
-
-
 		}
 
 		public static void StopLocationService()
@@ -522,7 +585,3 @@ namespace DataLogger.Droid
 
 
 }
-
-
-
-
