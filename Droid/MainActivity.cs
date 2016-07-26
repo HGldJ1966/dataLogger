@@ -18,7 +18,7 @@ using System;
 
 namespace DataLogger.Droid
 {
-	[Activity(Label = "DataLogger", MainLauncher = true, Icon = "@mipmap/icon", ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation,
+	[Activity(Label = "Pedestrian report", MainLauncher = true, Icon = "@mipmap/icon", ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation,
 	          ScreenOrientation = ScreenOrientation.Portrait)]
 
 	public class MainActivity : Activity
