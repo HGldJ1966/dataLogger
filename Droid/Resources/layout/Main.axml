@@ -8,25 +8,36 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/linearLayout1">
+        <Button
+            android:text="Start Tracking"
+            android:id="@+id/bnt_start_stop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
         <TextView
-            android:text="Select type of surface"
+            android:text="Report"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:id="@+id/textView3"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
+        <TextView
+            android:text="Select surface type"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView6" />
         <Spinner
             android:layout_width="match_parent"
             android:layout_height="53.0dp"
             android:id="@+id/spinner_mode"
             android:contextClickable="false" />
         <TextView
-            android:text="Report"
+            android:text="Detail"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/textView2" />
         <TextView
-            android:text="Write a report here"
+            android:text="Write a detail here"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/textView4" />
@@ -35,7 +46,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/editText_msg" />
         <TextView
-            android:text="Location may takes times to display, please wait~"
+            android:text="Location"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -82,13 +93,6 @@
             <Button
                 android:text="Report"
                 android:id="@+id/button_report" />
-            <Button
-                android:text="Get Pos"
-                android:id="@+id/bt_getPos"
-                android:textColor="#ffffffff" />
-            <Button
-                android:text="STOP"
-                android:id="@+id/bnt_start_stop" />
         </GridLayout>
         <ScrollView
             android:minWidth="25px"

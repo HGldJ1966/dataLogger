@@ -18,7 +18,8 @@ using System;
 
 namespace DataLogger.Droid
 {
-	[Activity(Label = "DataLogger", MainLauncher = true, Icon = "@mipmap/icon")]
+	[Activity(Label = "DataLogger", MainLauncher = true, Icon = "@mipmap/icon", ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation,
+	          ScreenOrientation = ScreenOrientation.Portrait)]
 
 	public class MainActivity : Activity
 	{
@@ -34,11 +35,15 @@ namespace DataLogger.Droid
 		TextView accText;
 		string txt; //storing information to write in SD card
 
+
 		protected override void OnCreate(Bundle bundle)
 		{
 			base.OnCreate(bundle);
 
 		    Log.Debug(logTag, "OnCreate: Location app is becoming active");
+
+
+
 
 			// Set our view from the "main" layout resource
 			SetContentView(Resource.Layout.Main);
@@ -72,9 +77,7 @@ namespace DataLogger.Droid
 			};
 			*/
 
-
-			FindViewById<Button>(Resource.Id.bt_getPos).Click += getCurrentPos;
-
+			FindViewById<Button>(Resource.Id.bnt_start_stop).Click += trackingGPS;
 
 			//Picture
 			if (IsThereAnAppToTakePictures())
@@ -109,22 +112,22 @@ namespace DataLogger.Droid
 			longText = FindViewById<TextView>(Resource.Id.lon);
 			altText = FindViewById<TextView>(Resource.Id.alt);
 			speedText = FindViewById<TextView>(Resource.Id.speed);
-			//bearText = FindViewById<TextView>(Resource.Id.bear);
 			accText = FindViewById<TextView>(Resource.Id.acc);
 
-			altText.Text = "altitude";
-			speedText.Text = "speed";
-			//bearText.Text = "bearing";
-			accText.Text = "accuracy";
+			latText.Text = "Latitude:";
+			longText.Text = "Longitude: ";
+			altText.Text = "Altitude";
+			speedText.Text = "Speed";
+			accText.Text = "Accuracy";
 
-			// Start the location service:
-			App.StartLocationService();
+
 
 		}
 
 
 		void writeLog(string txt) {
 			//create file name for date
+
 			string today = DateTime.Now.ToString("dd-MM-yyy");
 			var sdCardpath = Android.OS.Environment.ExternalStorageDirectory.Path;
 			var filePath = System.IO.Path.Combine(sdCardpath,string.Concat(today,"_datalogger.txt"));
@@ -149,19 +152,37 @@ namespace DataLogger.Droid
 			return (string.Format("{0}", now)); ;
 		}
 
-		void getCurrentPos(object sender, EventArgs eventArgs)
-		{
-			string toast4 = string.Format("get current position");
-			Toast.MakeText(this, toast4, ToastLength.Long).Show();
-			// notifies us of location changes from the system
-			App.Current.LocationService.LocationChanged += HandleLocationChanged;
-			//notifies us of user changes to the location provider (ie the user disables or enables GPS)
-			App.Current.LocationService.ProviderDisabled += HandleProviderDisabled;
-			App.Current.LocationService.ProviderEnabled += HandleProviderEnabled;
-			// notifies us of the changing status of a provider (ie GPS no longer available)
-			App.Current.LocationService.StatusChanged += HandleStatusChanged;
-		}
 
+		// stop tracking GPS
+		void trackingGPS(object sender, EventArgs eventArgs) 
+		{
+
+			string toast;
+
+			if (GlobalVariables.isStartTracking)
+			{
+				App.StartLocationService();
+				GlobalVariables.isStartTracking = false;
+				FindViewById<Button>(Resource.Id.bnt_start_stop).Text = "Stop tracking";
+				toast = string.Format("START");
+				FindViewById<TextView>(Resource.Id.lat).Text = "Latitude: {wait}";
+				FindViewById<TextView>(Resource.Id.lon).Text = "Longitude: {wait}";
+				FindViewById<TextView>(Resource.Id.alt).Text = "Altitude: {wait}";
+				FindViewById<TextView>(Resource.Id.speed).Text = "Speed: {wait}";
+				FindViewById<TextView>(Resource.Id.acc).Text = "Accuracy: {wait}";
+
+			}
+
+			else { 
+				App.StopLocationService();
+				GlobalVariables.isStartTracking = true;
+				FindViewById<Button>(Resource.Id.bnt_start_stop).Text = "Start tracking";
+				toast = string.Format("STOP");
+
+			}
+
+			Toast.MakeText(this, toast, ToastLength.Short).Show();
+		}
 
 		bool IsThereAnAppToTakePictures()
 		{
@@ -273,6 +294,8 @@ namespace DataLogger.Droid
 		}
 
 
+
+
 		#region Android Location Service methods
 
 		///<summary>
@@ -288,25 +311,31 @@ namespace DataLogger.Droid
 			{
 				latText.Text = string.Format("Latitude: {0:f6}", location.Latitude);
 				longText.Text = string.Format("Longitude: {0:f6}", location.Longitude);
-
 				altText.Text = string.Format("Altitude: {0:f6}", location.Altitude);
+				speedText.Text = string.Format("Speed: {0:f2}", location.Speed);
+				accText.Text = string.Format("Accuracy: {0:f2} m.", location.Accuracy);
+
+				//write location
 				string currentTime = getCurrentTime();
+				if (GlobalVariables.isWriteLog) {
+					//Write lat,lon to file
+					txt = string.Format("{0}, {1:f6}, {2:f6}, {3:f6} {4:f6} {5:f6}",
+										currentTime,
+					                    location.Latitude,
+										location.Longitude,
+										location.Altitude,
+					                    location.Speed,
+					                    location.Accuracy
+										);
 
-				//Write lat,lon to file
-				txt = string.Format("{0:f6}, {1:f6}, {2:f6}, {3} ", 
-				                    location.Latitude,
-				                    location.Longitude,
-				                    location.Altitude,
-				                    currentTime);
-				
-				writeLog(txt);
+					writeLog(txt);
 
-				/*
-				speedText.Text = String.Format("Speed: {0}", location.Speed);
-				accText.Text = String.Format("Accuracy: {0}", location.Accuracy);
-				bearText.Text = String.Format("Bearing: {0}", location.Bearing);
-				*/
+				}
+
 			});
+
+
+
 
 		}
 
@@ -365,6 +394,7 @@ namespace DataLogger.Droid
 		public static File _file;
 		public static File _dir;
 		public static Bitmap bitmap;
+
 
 		// events
 
@@ -438,7 +468,13 @@ namespace DataLogger.Droid
 				// Finally, we can bind to the Service using our Intent and the ServiceConnection we
 				// created in a previous step.
 				Application.Context.BindService(locationServiceIntent, locationServiceConnection, Bind.AutoCreate);
+
+				GlobalVariables.isWriteLog = true;
 			}).Start();
+
+
+
+
 		}
 
 		public static void StopLocationService()
@@ -459,11 +495,15 @@ namespace DataLogger.Droid
 				Log.Debug("App", "Stopping the LocationService");
 				Current.LocationService.StopSelf();
 			}
+
+			GlobalVariables.isWriteLog = false;
 		}
 
 		#endregion
 
 	}
+
+
 
 }
 
