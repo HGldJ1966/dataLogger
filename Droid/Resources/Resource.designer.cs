@@ -63,6 +63,9 @@ namespace DataLogger.Droid
 			// aapt resource value: 0x7f060011
 			public const int acc = 2131099665;
 			
+			// aapt resource value: 0x7f060012
+			public const int accelerometer_text = 2131099666;
+			
 			// aapt resource value: 0x7f06000f
 			public const int alt = 2131099663;
 			

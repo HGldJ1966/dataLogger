@@ -18,6 +18,7 @@ namespace DataLogger.Droid
 	{
 		public static bool isWriteLog = false;
 		public static bool isStartTracking = true;
+		public static string accelerometer = "";
 
 	}
 }

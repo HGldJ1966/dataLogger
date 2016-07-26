@@ -7,7 +7,6 @@ using Android.Content.PM;
 using Android.Graphics;
 using System.Collections.Generic;
 using Android.Provider;
-using Java.Lang;
 using Android.Locations;
 using Android.Util;
 using Android.Net;
@@ -15,13 +14,14 @@ using System.Threading.Tasks;
 using Java.Util;
 using DataLogger.Droid.Services;
 using System;
+using Android.Hardware;
 
 namespace DataLogger.Droid
 {
 	[Activity(Label = "Pedestrian report", MainLauncher = true, Icon = "@mipmap/icon", ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation,
 	          ScreenOrientation = ScreenOrientation.Portrait)]
 
-	public class MainActivity : Activity
+	public class MainActivity : Activity, ISensorEventListener
 	{
 		ImageView _imageView;
 		static readonly string TAG = "X:" + typeof(Activity).Name;
@@ -34,6 +34,11 @@ namespace DataLogger.Droid
 		TextView speedText;
 		TextView accText;
 		string txt; //storing information to write in SD card
+		static readonly object _syncLock = new object();
+		SensorManager _sensorManager;
+		TextView _sensorTextView;
+
+
 
 
 		protected override void OnCreate(Bundle bundle)
@@ -41,9 +46,6 @@ namespace DataLogger.Droid
 			base.OnCreate(bundle);
 
 		    Log.Debug(logTag, "OnCreate: Location app is becoming active");
-
-
-
 
 			// Set our view from the "main" layout resource
 			SetContentView(Resource.Layout.Main);
@@ -120,7 +122,9 @@ namespace DataLogger.Droid
 			speedText.Text = "Speed";
 			accText.Text = "Accuracy";
 
-
+			//Accelerometer data
+			_sensorManager = (SensorManager)GetSystemService(Context.SensorService);
+			_sensorTextView = FindViewById<TextView>(Resource.Id.accelerometer_text);
 
 		}
 
@@ -270,6 +274,7 @@ namespace DataLogger.Droid
 		{
 			Log.Debug(logTag, "OnPause: Location app is moving to background");
 			base.OnPause();
+			_sensorManager.UnregisterListener(this);
 		}
 
 		public void OnProviderEnabled(string provider) { }
@@ -283,6 +288,9 @@ namespace DataLogger.Droid
 		{
 			Log.Debug(logTag, "OnResume: Location app is moving into foreground");
 			base.OnResume();
+			_sensorManager.RegisterListener(this,
+									_sensorManager.GetDefaultSensor(SensorType.Accelerometer),
+									SensorDelay.Ui);
 		}
 
 		protected override void OnDestroy()
@@ -293,9 +301,6 @@ namespace DataLogger.Droid
 			// Stop the location service:
 			App.StopLocationService();
 		}
-
-
-
 
 		#region Android Location Service methods
 
@@ -320,15 +325,15 @@ namespace DataLogger.Droid
 				string currentTime = getCurrentTime();
 				if (GlobalVariables.isWriteLog) {
 					//Write lat,lon to file
-					txt = string.Format("{0}, {1:f6}, {2:f6}, {3:f6} {4:f6} {5:f6}",
+					txt = string.Format("{0}, {1:f6}, {2:f6}, {3:f6}, {4:f6}, {5:f6}, {6}",
 										currentTime,
 					                    location.Latitude,
 										location.Longitude,
 										location.Altitude,
 					                    location.Speed,
-					                    location.Accuracy
+					                    location.Accuracy,
+					                    GlobalVariables.accelerometer
 										);
-
 					writeLog(txt);
 
 				}
@@ -356,6 +361,21 @@ namespace DataLogger.Droid
 		}
 
 		#endregion
+
+
+		public void OnAccuracyChanged(Sensor sensor, SensorStatus accuracy)
+		{
+			// We don't want to do anything here.
+		}
+
+		public void OnSensorChanged(SensorEvent e)
+		{
+			lock (_syncLock)
+			{
+				_sensorTextView.Text = string.Format("x={0:f}, y={1:f}, z={2:f}", e.Values[0], e.Values[1], e.Values[2]);
+				GlobalVariables.accelerometer = string.Format("Accelerometer: x={0:f}, y={1:f}, z={2:f}", e.Values[0], e.Values[1], e.Values[2]);
+			}
+		}
 
 	}
 
