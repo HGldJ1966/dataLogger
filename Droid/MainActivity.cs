@@ -40,6 +40,7 @@ namespace DataLogger.Droid
 		SensorManager _sensorManager;
 		TextView _sensorTextView;
 
+
 		protected override void OnCreate(Bundle bundle)
 		{
 			base.OnCreate(bundle);
@@ -48,9 +49,6 @@ namespace DataLogger.Droid
 
 			// Set our view from the "main" layout resource
 			SetContentView(Resource.Layout.ReportLayout);
-
-			FindViewById<Button>(Resource.Id.bnt_report).Enabled = false;
-			                                          
 
 			latText = FindViewById<TextView>(Resource.Id.lat);
 			longText = FindViewById<TextView>(Resource.Id.lon);
@@ -64,33 +62,16 @@ namespace DataLogger.Droid
 			speedText.Text = "Speed";
 			accText.Text = "Accuracy";
 
-			Button bnt_report = FindViewById<Button>(Resource.Id.bnt_report);
 			Button bnt_navigation = FindViewById<Button>(Resource.Id.bnt_navigation);
 			Button bnt_sendData = FindViewById<Button>(Resource.Id.bnt_sendData);
 
-			bnt_report.Click += delegate
-			{
-				var report_activity = new Intent(this, typeof(MainActivity));
 
-				StartActivity(report_activity);
-
-				bnt_report.Enabled = false;
-				bnt_navigation.Enabled = true;
-				bnt_sendData.Enabled = true;
-
-			};
 
 			bnt_navigation.Click += delegate
 			{
 				var navigation_activity = new Intent(this, typeof(NavigationActivity));
 
 				StartActivity(navigation_activity);
-
-				bnt_report.Enabled = false;
-				bnt_navigation.Enabled = false;
-				bnt_sendData.Enabled = true;
-
-
 
 			};
 
@@ -99,10 +80,6 @@ namespace DataLogger.Droid
 				var sendData_activity = new Intent(this, typeof(sendLogData));
 
 				StartActivity(sendData_activity);
-
-				bnt_report.Enabled = false;
-				bnt_navigation.Enabled = true;
-				bnt_sendData.Enabled = false;
 
 			};
 
@@ -395,9 +372,9 @@ namespace DataLogger.Droid
 		{
 			Log.Debug(logTag, "OnDestroy: Location app is becoming inactive");
 			base.OnDestroy();
-			_sensorManager.UnregisterListener(this);
+			//_sensorManager.UnregisterListener(this);
 			// Stop the location service:
-			App.StopLocationService();
+			//App.StopLocationService();
 		}
 
 		#region Android Location Service methods

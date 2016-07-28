@@ -1,0 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<item android:id="@+id/about" android:title="About Guruji" android:showAsAction="always" /> 
+<item android:id="@+id/missionVision" android:title="Mission - Vision" android:showAsAction="always" /> 
+<item android:id="@+id/mediaConcept" android:title="Media Concept" android:showAsAction="always" />
