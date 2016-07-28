@@ -1,5 +1,5 @@
 ﻿using Android.App;
-
+using Java.IO;
 
 namespace DataLogger.Droid
 {
@@ -15,8 +15,7 @@ namespace DataLogger.Droid
 		public static string prevAlt = "";
 		public static string prevSpeed = "";
 		public static string prevAccuracy = "";
-		public static var image_url = "";
-
+		public static File image_file;
 
 	}
 }

@@ -19,6 +19,7 @@ using Android.Views;
 using Android.Runtime;
 using System.IO;
 using Android.Media;
+using System.Linq;
 
 namespace DataLogger.Droid
 {
@@ -98,9 +99,33 @@ namespace DataLogger.Droid
 					string data = string.Format("{0},{1}",message,typeOfPath);
 					string url = System.String.Concat("http://203.131.209.92/datalogger/getReport.php?data=",data);
 
-					String filePath = GlobalVariables.image_url;
+				
+					List<byte> rawBuffer = new List<byte>();
+					var contentUri = Android.Net.Uri.FromFile(GlobalVariables.image_file);
+					using (System.IO.Stream stream = ContentResolver.OpenInputStream(contentUri))
+					{
+						byte[] buffer = new byte[4096];
+						int len = 0;
+						while ((len = stream.Read(buffer, 0, buffer.Length)) > 0)
+						{
+							rawBuffer.AddRange(buffer.Take(len));
+							       
+						}
+					}
 
+					string base64 = System.Convert.ToBase64String(rawBuffer.ToArray());
 
+					try
+					{
+						var webClient = new System.Net.WebClient();
+						webClient.Headers[HttpRequestHeader.ContentType] = "binary/octet-stream";
+						//webClient.UploadFile(new Uri("http://203.131.209.92/datalogger/upload.php"), base64);
+						Toast.MakeText(this, base64, ToastLength.Short).Show();
+					}
+					catch (Exception ex)
+					{
+						Toast.MakeText(this,"error", ToastLength.Long).Show();
+					}
 
 
 					HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
@@ -109,7 +134,7 @@ namespace DataLogger.Droid
 					//using GET - request.Headers.Add ("Authorization","Authorizaation value");
 
 
-					request.ContentType = "application/json";
+					//request.ContentType = "application/json";
 					HttpWebResponse myResp = (HttpWebResponse)request.GetResponse();
 
 
@@ -343,7 +368,7 @@ namespace DataLogger.Droid
 
 
 			//Toast.MakeText(this, App._file.ToString(), ToastLength.Short).Show();
-			GlobalVariables.image_url = App._file.ToString();
+			GlobalVariables.image_file = App._file;
 
 
 			StartActivityForResult(intent, 0);
