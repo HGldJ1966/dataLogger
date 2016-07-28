@@ -13,45 +13,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/fragmentContainer" />
-        <Button
-            android:text="Start Tracking"
-            android:id="@+id/bnt_start_stop"
-            android:textColor="#ffffffff"
-            android:background="#ff19998f"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-        <TextView
-            android:text="Report"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:id="@+id/textView3"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-        <TextView
-            android:text="Select surface type"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/textView6" />
-        <Spinner
-            android:layout_width="match_parent"
-            android:layout_height="53.0dp"
-            android:id="@+id/spinner_mode"
-            android:contextClickable="false" />
-        <TextView
-            android:text="Detail"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/textView2" />
-        <TextView
-            android:text="Write a detail here"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/textView4" />
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/editText_msg" />
         <GridLayout
             android:minWidth="25px"
             android:minHeight="25px"
@@ -62,62 +23,27 @@
             android:columnCount="4"
             android:orientation="horizontal"
             android:alignmentMode="alignBounds"
-            android:useDefaultMargins="false">
-            <Button
-                android:text="Take a picture"
-                android:id="@+id/bnt_takePic" />
-            <Button
-                android:text="Report"
-                android:id="@+id/button_report" />
-        </GridLayout>
+            android:useDefaultMargins="false" />
         <RelativeLayout
             android:minWidth="25px"
             android:minHeight="25px"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/relativeLayout1">
-            <ImageView
-                android:src="@android:drawable/ic_menu_gallery"
-                android:id="@+id/imageView1"
-                android:adjustViewBounds="true"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </RelativeLayout>
-        <TextView
-            android:text="Detail"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/textView5" />
-        <TextView
-            android:text="Latitude:"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/lat" />
-        <TextView
-            android:text="Longitude:"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/lon" />
-        <TextView
-            android:text="Altitude:"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/alt" />
-        <TextView
-            android:text="Speed:"
-            android:id="@+id/speed"
+            android:id="@+id/relativeLayout1" />
+        <Button
+            android:text="Navigation"
+            android:id="@+id/bnt_navigation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
-        <TextView
-            android:text="Accuracy:"
-            android:id="@+id/acc"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-        <TextView
-            android:text="Accelerometer:"
+        <Button
+            android:text="REPORT"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/accelerometer_text" />
+            android:id="@+id/bnt_report" />
+        <Button
+            android:text="Send data"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/bnt_sendDate" />
     </LinearLayout>
 </ScrollView>

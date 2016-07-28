@@ -47,7 +47,66 @@ namespace DataLogger.Droid
 			Log.Debug(logTag, "OnCreate: Location app is becoming active");
 
 			// Set our view from the "main" layout resource
-			SetContentView(Resource.Layout.Main);
+			SetContentView(Resource.Layout.ReportLayout);
+
+			FindViewById<Button>(Resource.Id.bnt_report).Enabled = false;
+			                                          
+
+			latText = FindViewById<TextView>(Resource.Id.lat);
+			longText = FindViewById<TextView>(Resource.Id.lon);
+			altText = FindViewById<TextView>(Resource.Id.alt);
+			speedText = FindViewById<TextView>(Resource.Id.speed);
+			accText = FindViewById<TextView>(Resource.Id.acc);
+
+			latText.Text = "Latitude:";
+			longText.Text = "Longitude: ";
+			altText.Text = "Altitude";
+			speedText.Text = "Speed";
+			accText.Text = "Accuracy";
+
+			Button bnt_report = FindViewById<Button>(Resource.Id.bnt_report);
+			Button bnt_navigation = FindViewById<Button>(Resource.Id.bnt_navigation);
+			Button bnt_sendData = FindViewById<Button>(Resource.Id.bnt_sendData);
+
+			bnt_report.Click += delegate
+			{
+				var report_activity = new Intent(this, typeof(MainActivity));
+
+				StartActivity(report_activity);
+
+				bnt_report.Enabled = false;
+				bnt_navigation.Enabled = true;
+				bnt_sendData.Enabled = true;
+
+			};
+
+			bnt_navigation.Click += delegate
+			{
+				var navigation_activity = new Intent(this, typeof(NavigationActivity));
+
+				StartActivity(navigation_activity);
+
+				bnt_report.Enabled = false;
+				bnt_navigation.Enabled = false;
+				bnt_sendData.Enabled = true;
+
+
+
+			};
+
+			bnt_sendData.Click += delegate
+			{
+				var sendData_activity = new Intent(this, typeof(sendLogData));
+
+				StartActivity(sendData_activity);
+
+				bnt_report.Enabled = false;
+				bnt_navigation.Enabled = true;
+				bnt_sendData.Enabled = false;
+
+			};
+
+
 
 
 			Spinner spinner = FindViewById<Spinner>(Resource.Id.spinner_mode);
@@ -102,90 +161,39 @@ namespace DataLogger.Droid
 				App.Current.LocationService.StatusChanged += HandleStatusChanged;
 			};
 
-			latText = FindViewById<TextView>(Resource.Id.lat);
-			longText = FindViewById<TextView>(Resource.Id.lon);
-			altText = FindViewById<TextView>(Resource.Id.alt);
-			speedText = FindViewById<TextView>(Resource.Id.speed);
-			accText = FindViewById<TextView>(Resource.Id.acc);
 
-			latText.Text = "Latitude:";
-			longText.Text = "Longitude: ";
-			altText.Text = "Altitude";
-			speedText.Text = "Speed";
-			accText.Text = "Accuracy";
 
 			//Accelerometer data
 			_sensorManager = (SensorManager)GetSystemService(Context.SensorService);
 			_sensorTextView = FindViewById<TextView>(Resource.Id.accelerometer_text);
 
-			this.ActionBar.NavigationMode = ActionBarNavigationMode.Tabs;
 
-			AddTab("Tab 1", Resource.Mipmap.Icon, new SampleTabFragment());
-			AddTab("Tab 2", Resource.Mipmap.Icon, new SampleTabFragment2());
-
-			if (bundle != null)
-				this.ActionBar.SelectTab(this.ActionBar.GetTabAt(bundle.GetInt("tab")));
-
-		}
-
-
-		protected override void OnSaveInstanceState(Bundle outState)
-		{
-			outState.PutInt("tab", this.ActionBar.SelectedNavigationIndex);
-
-			base.OnSaveInstanceState(outState);
-		}
-
-		void AddTab(string tabText, int iconResourceId, Fragment view)
-		{
-			var tab = this.ActionBar.NewTab();
-			tab.SetText(tabText);
-			tab.SetIcon(Resource.Mipmap.Icon);
-
-			// must set event handler before adding tab
-			tab.TabSelected += delegate (object sender, ActionBar.TabEventArgs e)
+			if (GlobalVariables.isTracking)
 			{
-				var fragment = this.FragmentManager.FindFragmentById(Resource.Id.fragmentContainer);
-				if (fragment != null)
-					e.FragmentTransaction.Remove(fragment);
-				e.FragmentTransaction.Add(Resource.Id.fragmentContainer, view);
-			};
-			tab.TabUnselected += delegate (object sender, ActionBar.TabEventArgs e)
-			{
-				e.FragmentTransaction.Remove(view);
-			};
+				FindViewById<Button>(Resource.Id.bnt_start_stop).SetBackgroundColor(Color.Red);
+				FindViewById<Button>(Resource.Id.bnt_start_stop).Text = "Stop tracking";
 
-			this.ActionBar.AddTab(tab);
-		}
+				FindViewById<TextView>(Resource.Id.lat).Text = GlobalVariables.prevLat;
+				FindViewById<TextView>(Resource.Id.lon).Text = GlobalVariables.prevLon;
+				FindViewById<TextView>(Resource.Id.acc).Text = GlobalVariables.prevAccuracy;
+				FindViewById<TextView>(Resource.Id.speed).Text = GlobalVariables.prevSpeed;
+				FindViewById<TextView>(Resource.Id.alt).Text = GlobalVariables.prevAlt;
 
-		class SampleTabFragment : Fragment
-		{
-			public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-			{
-				base.OnCreateView(inflater, container, savedInstanceState);
-
-				var view = inflater.Inflate(Resource.Layout.ReportLayout, container, false);
-				var sampleTextView = view.FindViewById<TextView>(Resource.Id.textView_reportLayout);
-				sampleTextView.Text = "sample fragment text";
-
-				return view;
 			}
-		}
+			else {
+				FindViewById<Button>(Resource.Id.bnt_start_stop).SetBackgroundColor(Color.Blue);
+				FindViewById<Button>(Resource.Id.bnt_start_stop).Text = "Start tracking";
 
-		class SampleTabFragment2 : Fragment
-		{
-			public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-			{
-				base.OnCreateView(inflater, container, savedInstanceState);
-
-				var view = inflater.Inflate(Resource.Layout.Tap, container, false);
-				var sampleTextView = view.FindViewById<TextView>(Resource.Id.sampleTextView);
-				sampleTextView.Text = "sample fragment text 2";
-
-				return view;
+				/*
+				FindViewById<TextView>(Resource.Id.lat).Text = GlobalVariables.prevLat;
+				FindViewById<TextView>(Resource.Id.lon).Text = GlobalVariables.prevLon;
+				FindViewById<TextView>(Resource.Id.acc).Text = GlobalVariables.prevAccuracy;
+				FindViewById<TextView>(Resource.Id.speed).Text = GlobalVariables.prevSpeed;
+				FindViewById<TextView>(Resource.Id.alt).Text = GlobalVariables.prevAlt;
+				*/
 			}
-		}
 
+		}
 
 		void writeLog(string txt)
 		{
@@ -194,6 +202,7 @@ namespace DataLogger.Droid
 			string today = DateTime.Now.ToString("dd-MM-yyy");
 			var sdCardpath = Android.OS.Environment.ExternalStorageDirectory.Path;
 			var filePath = System.IO.Path.Combine(sdCardpath, string.Concat(today, "_datalogger.txt"));
+
 
 			using (var writer = new System.IO.StreamWriter(filePath, true))
 			{
@@ -235,6 +244,9 @@ namespace DataLogger.Droid
 				FindViewById<TextView>(Resource.Id.alt).Text = "Altitude: {wait}";
 				FindViewById<TextView>(Resource.Id.speed).Text = "Speed: {wait}";
 				FindViewById<TextView>(Resource.Id.acc).Text = "Accuracy: {wait}";
+
+
+				GlobalVariables.isTracking = true; //this app is tracking GPS!!
 			}
 
 			else {
@@ -243,6 +255,8 @@ namespace DataLogger.Droid
 				FindViewById<Button>(Resource.Id.bnt_start_stop).Text = "Start tracking";
 				FindViewById<Button>(Resource.Id.bnt_start_stop).SetBackgroundColor(Color.Gray);
 				toast = string.Format("STOP");
+
+				GlobalVariables.isTracking = false; //this app is not tracking GPS!!
 
 			}
 
@@ -344,8 +358,32 @@ namespace DataLogger.Droid
 			Log.Debug(TAG, "{0}, {1}", provider, status);
 		}
 
+
+		protected override void OnSaveInstanceState(Bundle outState)
+		{
+			/*
+			if (GlobalVariables.isStartTracking)
+			{
+				FindViewById<Button>(Resource.Id.bnt_start_stop).Text = "Start tracking";
+				FindViewById<Button>(Resource.Id.bnt_start_stop).SetBackgroundColor(Color.Gray);
+			}
+			else { 
+				FindViewById<Button>(Resource.Id.bnt_start_stop).Text = "Stop tracking";
+				FindViewById<Button>(Resource.Id.bnt_start_stop).SetBackgroundColor(Color.Red);
+			}
+
+			// always call the base implementation!
+			outState.PutString(savestate_tracking, FindViewById<Button>(Resource.Id.bnt_start_stop).Text);
+			string toast = string.Format("save state {0}",savestate_tracking);
+			Toast.MakeText(this, toast, ToastLength.Short).Show();
+			*/
+			base.OnSaveInstanceState(outState);
+		}
+
 		protected override void OnResume()
 		{
+			
+
 			Log.Debug(logTag, "OnResume: Location app is moving into foreground");
 			base.OnResume();
 			_sensorManager.RegisterListener(this,
@@ -380,6 +418,12 @@ namespace DataLogger.Droid
 				altText.Text = string.Format("Altitude: {0:f6}", location.Altitude);
 				speedText.Text = string.Format("Speed: {0:f2}", location.Speed);
 				accText.Text = string.Format("Accuracy: {0:f2} m.", location.Accuracy);
+
+				GlobalVariables.prevLat = string.Format("Latitude: {0:f6}", location.Latitude);
+				GlobalVariables.prevLon = string.Format("Longitude: {0:f6}", location.Longitude);
+				GlobalVariables.prevAlt = string.Format("Altitude: {0:f6}", location.Altitude);
+				GlobalVariables.prevSpeed = string.Format("Speed: {0:f2}", location.Speed);
+				GlobalVariables.prevAccuracy = string.Format("Accuracy: {0:f2} m.", location.Accuracy);
 
 				//write location
 				string currentTime = getCurrentTime();
@@ -436,6 +480,10 @@ namespace DataLogger.Droid
 				_sensorTextView.Text = string.Format("Accelerometer: x={0:f}, y={1:f}, z={2:f}", e.Values[0], e.Values[1], e.Values[2]);
 				GlobalVariables.accelerometer = string.Format("x={0:f}, y={1:f}, z={2:f}", e.Values[0], e.Values[1], e.Values[2]);
 			}
+		}
+
+		public void isUpdateUI() { 
+			
 		}
 
 	}

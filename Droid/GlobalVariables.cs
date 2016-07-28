@@ -1,15 +1,5 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Android.App;
 
-using Android.App;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
 
 namespace DataLogger.Droid
 {
@@ -19,6 +9,13 @@ namespace DataLogger.Droid
 		public static bool isWriteLog = false;
 		public static bool isStartTracking = true;
 		public static string accelerometer = "";
+		public static bool isTracking = false;
+		public static string prevLat = "";
+		public static string prevLon = "";
+		public static string prevAlt = "";
+		public static string prevSpeed = "";
+		public static string prevAccuracy = "";
+
 
 	}
 }

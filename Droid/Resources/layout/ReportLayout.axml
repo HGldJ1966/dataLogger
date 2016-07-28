@@ -13,11 +13,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/fragmentContainer">
-            <TextView
-                android:text="Text"
+            <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/textView_reportLayout" />
+                android:id="@+id/gridLayout2"
+                android:rowCount="1"
+                android:columnCount="3"
+                android:orientation="horizontal"
+                android:alignmentMode="alignMargins"
+                android:layoutDirection="inherit">
+                <Button
+                    android:text="Report"
+                    android:id="@+id/bnt_report" />
+                <Button
+                    android:text="NaviGATION"
+                    android:id="@+id/bnt_navigation" />
+                <Button
+                    android:text="SEND DATA"
+                    android:id="@+id/bnt_sendData" />
+            </GridLayout>
         </FrameLayout>
         <Button
             android:text="Start Tracking"

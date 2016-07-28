@@ -53,6 +53,8 @@
     <Compile Include="Services\ServiceConnectedEventArgs.cs" />
     <Compile Include="GlobalVariables.cs" />
     <Compile Include="sendLogData.cs" />
+    <Compile Include="NavigationActivity.cs" />
+    <Compile Include="ReportActivity.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -70,6 +72,8 @@
     <AndroidResource Include="Resources\mipmap-xxxhdpi\Icon.png" />
     <AndroidResource Include="Resources\layout\Tap.axml" />
     <AndroidResource Include="Resources\layout\ReportLayout.axml" />
+    <AndroidResource Include="Resources\layout\NavigationLayout.axml" />
+    <AndroidResource Include="Resources\layout\SendLogLayout.axml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\" />
