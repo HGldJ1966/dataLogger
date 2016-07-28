@@ -20,8 +20,9 @@
                 android:rowCount="1"
                 android:columnCount="2"
                 android:orientation="horizontal"
-                android:alignmentMode="alignMargins"
-                android:layoutDirection="inherit">
+                android:alignmentMode="alignBounds"
+                android:layoutDirection="inherit"
+                android:useDefaultMargins="false">
                 <Button
                     android:text="NaviGATION"
                     android:id="@+id/bnt_navigation"

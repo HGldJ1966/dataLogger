@@ -9,14 +9,16 @@ using System.Collections.Generic;
 using Android.Provider;
 using Android.Locations;
 using Android.Util;
-using Android.Net;
 using System.Threading.Tasks;
 using Java.Util;
 using DataLogger.Droid.Services;
 using System;
+using System.Net;
 using Android.Hardware;
 using Android.Views;
 using Android.Runtime;
+using System.IO;
+using Android.Media;
 
 namespace DataLogger.Droid
 {
@@ -65,6 +67,8 @@ namespace DataLogger.Droid
 			Button bnt_navigation = FindViewById<Button>(Resource.Id.bnt_navigation);
 			Button bnt_sendData = FindViewById<Button>(Resource.Id.bnt_sendData);
 
+			Button bnt_report = FindViewById<Button>(Resource.Id.button_report);
+
 
 
 			bnt_navigation.Click += delegate
@@ -83,6 +87,61 @@ namespace DataLogger.Droid
 
 			};
 
+
+			bnt_report.Click += delegate
+			{
+				string message = FindViewById<EditText>(Resource.Id.editText_msg).Text;
+				var typeOfPath = FindViewById<Spinner>(Resource.Id.spinner_mode).SelectedItem;
+
+				try
+				{
+					string data = string.Format("{0},{1}",message,typeOfPath);
+					string url = System.String.Concat("http://203.131.209.92/datalogger/getReport.php?data=",data);
+
+					String filePath = GlobalVariables.image_url;
+
+
+
+
+					HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+
+					//request.Method = "GET/POST";
+					//using GET - request.Headers.Add ("Authorization","Authorizaation value");
+
+
+					request.ContentType = "application/json";
+					HttpWebResponse myResp = (HttpWebResponse)request.GetResponse();
+
+
+					string responseText;
+
+					using (var response = request.GetResponse())
+					{
+						using (var reader = new StreamReader(response.GetResponseStream()))
+						{
+							responseText = reader.ReadToEnd();
+							Toast.MakeText(this, responseText, ToastLength.Short).Show();
+
+
+						}
+					}
+
+
+				}
+
+				catch (WebException exception)
+				{
+					/*
+					string responseText;
+					using (var reader = new StreamReader(exception.Response.GetResponseStream()))
+					{
+						responseText = reader.ReadToEnd();
+
+					}
+					*/
+				}
+
+			};
 
 
 
@@ -261,7 +320,7 @@ namespace DataLogger.Droid
 
 		private void CreateDirectoryForPictures()
 		{
-			App._dir = new File(
+			App._dir = new Java.IO.File(
 				Android.OS.Environment.GetExternalStoragePublicDirectory(
 					Android.OS.Environment.DirectoryPictures), "CameraAppDemo");
 			if (!App._dir.Exists())
@@ -277,10 +336,16 @@ namespace DataLogger.Droid
 
 			Intent intent = new Intent(MediaStore.ActionImageCapture);
 
-			App._file = new File(App._dir, string.Format("myPhoto_{0}.jpg", UUID.RandomUUID()));
+			App._file = new Java.IO.File(App._dir, string.Format("myPhoto_{0}.jpg", UUID.RandomUUID()));
 
 			//App._file = new File(App._dir, String.Format("myPhoto_{0}.jpg", guid.NewGuid()));
 			intent.PutExtra(MediaStore.ExtraOutput, Android.Net.Uri.FromFile(App._file));
+
+
+			//Toast.MakeText(this, App._file.ToString(), ToastLength.Short).Show();
+			GlobalVariables.image_url = App._file.ToString();
+
+
 			StartActivityForResult(intent, 0);
 
 			//Resume collect GPS
@@ -296,6 +361,9 @@ namespace DataLogger.Droid
 			Intent mediaScanIntent = new Intent(Intent.ActionMediaScannerScanFile);
 			Android.Net.Uri contentUri = Android.Net.Uri.FromFile(App._file);
 			mediaScanIntent.SetData(contentUri);
+
+
+
 			SendBroadcast(mediaScanIntent);
 
 			// Display in ImageView. We will resize the bitmap to fit the display.
@@ -498,8 +566,8 @@ namespace DataLogger.Droid
 
 	public class App
 	{
-		public static File _file;
-		public static File _dir;
+		public static Java.IO.File _file;
+		public static Java.IO.File _dir;
 		public static Bitmap bitmap;
 
 

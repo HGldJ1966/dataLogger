@@ -55,6 +55,7 @@ namespace DataLogger.Droid
 			var t = items[position];
 			Toast.MakeText(this, t, ToastLength.Short).Show();
 
+
 			//var logPath = FileSystemUtils.CopyFileToPersonalFolder(media.FilePathUri().AbsolutePath);
 			var email = new Intent(Intent.ActionSend);
 

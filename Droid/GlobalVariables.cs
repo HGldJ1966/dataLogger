@@ -15,6 +15,7 @@ namespace DataLogger.Droid
 		public static string prevAlt = "";
 		public static string prevSpeed = "";
 		public static string prevAccuracy = "";
+		public static var image_url = "";
 
 
 	}
